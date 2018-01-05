@@ -46,12 +46,18 @@ class Bazojs {
     } return this.serverAddress;
   }
   responseWasSuccessfull(response) {
+    if (typeof response === 'object') {
+      return true;
+    }
     if (response === '') {
       return false;
     }
     if (response.match(/does not exist/)) {
       return false;
     } return true;
+  }
+  throwArgumentError() {
+    throw new Error('Missing arguments');
   }
 }
 
