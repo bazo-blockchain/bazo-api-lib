@@ -4,6 +4,7 @@
   "description": "A wrapper library for the API of the bazo light client.",
   "main": "index.js",
   "scripts": {
+    "lint": "./node_modules/.bin/eslint index.js",
     "test": "./node_modules/mocha/bin/mocha"
   },
   "author": "",
@@ -11,6 +12,11 @@
   "dependencies": {
     "axios": "^0.17.1",
     "elliptic": "^6.4.0",
+    "eslint": "^4.15.0",
     "mocha": "^4.1.0"
+  },
+  "devDependencies": {
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0"
   }
 }
