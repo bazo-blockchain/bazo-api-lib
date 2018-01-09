@@ -69,7 +69,6 @@ describe('bazo-api-lib', function() {
         assert.fail()
       })
       .catch(function(err) {
-        console.log(err);
         assert(true);
       });
     });
