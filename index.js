@@ -11,7 +11,7 @@ class Bazojs {
       axios.get(that.formatAccountRequest(publicKey))
       .then((res) => {
         if (!that.responseWasSuccessfull(res.data)) {
-          reject();
+          reject(res.data);
         }
         resolve(res.data);
       })
