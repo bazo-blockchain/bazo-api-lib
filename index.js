@@ -23,7 +23,7 @@ class Bazojs {
   getTransactionHash(header=0, amount, fee, txCount, sender, recipient){
     let that = this;
     return new Promise(function(resolve, reject) {
-      axios.post(that.formatTxHashRequest(header, amount, fee, txCount, sender, recipient))
+      axios.post(that.formatTxHashRequest(header, amount, fee, txCount, sender, recipient, reject))
       .then((res) => {
         resolve(res.data.content[0].detail);
       })
@@ -35,7 +35,7 @@ class Bazojs {
   sendRawTransaction(txHash, txSignature){
     let that = this;
     return new Promise(function(resolve, reject) {
-      axios.post(that.formatTransactionSubmission(txHash, txSignature))
+      axios.post(that.formatTransactionSubmission(txHash, txSignature, reject))
       .then((res) => {
         resolve(res);
       })
@@ -46,33 +46,42 @@ class Bazojs {
   }
   createAndSubmitTransaction(header, amount, fee, sender, recipient, privateKey) {
     let that = this;
-    that.getAccountInfo(sender)
-    .then((res) => {
-      console.log('Queried the txCount.. :', res.txCnt);
-      that.getTransactionHash(header, amount, fee, res.txCnt, sender, recipient)
+    return new Promise(function(resolve, reject) {
+      that.getAccountInfo(sender)
       .then((res) => {
-        console.log('Queried the Hash.. :', res)
-        let signature = that.signHash(res, privateKey)
-        console.log('Computed the signature.. :', signature);
-        that.sendRawTransaction(res, signature)
+        that.getTransactionHash(header, amount, fee, res.txCnt, sender, recipient)
         .then((res) => {
-          console.log('Successfully submitted the transaction!');
+          let signature = that.signHash(res, privateKey, reject)
+          that.sendRawTransaction(res, signature)
+          .then((res) => {
+            resolve(true)
+          })
+          .catch((err) => {
+            reject(err)
+          })
+        })
+        .catch((err) => {
+          reject(err)
         })
       })
-    })
+      .catch((err) => {
+        reject(err)
+      })
+    });
   }
   formatAccountRequest(publicKey) {
     return `${this.formatServerAddress()}account/${publicKey}`;
   }
-  formatTxHashRequest(header, amount, fee, txCount, sender, recipient) {
+  formatTxHashRequest(header, amount, fee, txCount, sender, recipient, reject) {
     if (!(amount > 0 && fee > 0 && txCount && sender && recipient)) {
-      this.throwArgumentError();
+      //this.throwArgumentError();
+      reject();
     }
     return `${this.formatServerAddress()}createFundsTx/${header}/${amount}/${fee}/${txCount}/${sender}/${recipient}`;
   }
-  formatTransactionSubmission(txHash, signature) {
+  formatTransactionSubmission(txHash, signature, reject) {
     if (!(signature && txHash)) {
-      this.throwArgumentError();
+      reject();
     }
     return `${this.formatServerAddress()}sendFundsTx/${txHash}/${signature}`
   }
@@ -81,9 +90,9 @@ class Bazojs {
       return `${this.serverAddress}/`;
     } return this.serverAddress;
   }
-  signHash(txHash, privateKey) {
+  signHash(txHash, privateKey, reject) {
     if (!(txHash && privateKey)) {
-      this.throwArgumentError();
+      reject();
     }
     let curve = new elliptic.ec('p256')
     let key = curve.keyFromPrivate(privateKey);
@@ -91,6 +100,7 @@ class Bazojs {
     try {
       signature = key.sign(txHash);
     } catch (e) {
+      reject();
     }
     return signature.r.toJSON() + signature.s.toJSON();
   }
