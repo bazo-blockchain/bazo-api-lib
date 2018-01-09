@@ -37,7 +37,7 @@ class Bazojs {
     return new Promise(function(resolve, reject) {
       axios.post(that.formatTransactionSubmission(txHash, txSignature))
       .then((res) => {
-        resolve();
+        resolve(res);
       })
       .catch((err) => {
         reject(err);
