@@ -84,7 +84,7 @@ describe('bazo-api-lib', function() {
     });
     it('should be possible to create and sign a transaction', function() {
       var bazo = new bazolib(serverURL);
-      return bazo.createAndSubmitTransaction(0, 9, 1, nonRootPubKey1, nonRootPubKey2, nonRootPrivKey1)
+      return bazo.createAndSubmitFundsTx(0, 9, 1, nonRootPubKey1, nonRootPubKey2, nonRootPrivKey1)
       .then((res) => {
           assert(res)
       })
@@ -95,7 +95,7 @@ describe('bazo-api-lib', function() {
     });
     it('should not be possible to create and sign a transaction with missing arguments', function() {
       var bazo = new bazolib(serverURL);
-      return bazo.createAndSubmitTransaction(0, 9, 1, nonRootPubKey1, nonRootPubKey2)
+      return bazo.createAndSubmitFundsTx(0, 9, 1, nonRootPubKey1, nonRootPubKey2)
       .then((res)=> {
         assert.fail()
       })
@@ -104,6 +104,134 @@ describe('bazo-api-lib', function() {
       })
     });
   });
+
+
+
+  describe('AccTx', function() {
+    it('should return a correct hash and keyfile', function() {
+      var bazo = new bazolib(serverURL);
+      return bazo.getAccTxHash(0, 1, rootPubKey)
+      .then(function(data) {
+        assert(data.length === 4);
+
+        assert(data[0].name === 'PubKey1');
+        assert(data[0].detail.length === 64);
+
+        assert(data[1].name === 'PubKey2');
+        assert(data[1].detail.length === 64);
+
+        assert(data[2].name === 'PrivKey');
+        assert(data[2].detail.length === 64);
+
+        assert(data[3].name === 'TxHash');
+        assert(data[3].detail.length === 64);
+
+        // assert(data.content === 64)
+      });
+    });
+    it('should throw an error if arguments are missing', function() {
+      var bazo = new bazolib(serverURL);
+      return bazo.getAccTxHash(0)
+      .then(function(data) {
+        assert.fail()
+      })
+      .catch(function(err) {
+        assert(true);
+      });
+    });
+    it('should accept a posted transaction', function() {
+      var bazo = new bazolib(serverURL);
+      return bazo.sendRawAccTx('5c0ce50cc90a469fb2a6c995e43bddf8cd8100c9506948c2c12768b2ed2a40d5', '5c0ce50cc90a469fb2a6c995e43bddf8cd8100c9506948c2c12768b2ed2a40d5')
+      .then(function(data) {
+        assert(true)
+      })
+      .catch(function(err) {
+        assert.fail()
+      });
+    });
+    it('should be possible to create and sign a transaction', function() {
+      var bazo = new bazolib(serverURL);
+      return bazo.createAndSubmitAccTx(0, 1, rootPubKey, rootPrivKey)
+      .then((res) => {
+          assert(res)
+      })
+      .catch((err) => {
+        console.log(err);
+        console.log('INFO: If this test case fails, it is likely due to a problem with the bazo light client. It is recommended to check the output of the API.');
+        assert.fail()
+      })
+    });
+    it('should not be possible to create and sign a transaction with missing arguments', function() {
+      var bazo = new bazolib(serverURL);
+      return bazo.createAndSubmitFundsTx(0, 9, 1, nonRootPubKey1, nonRootPubKey2)
+      .then((res)=> {
+        assert.fail()
+      })
+      .catch((err) => {
+        assert(true)
+      })
+    });
+  });
+
+
+
+  describe('ConfigTx', function() {
+    it('should return a correct hash', function() {
+      var bazo = new bazolib(serverURL);
+      return bazo.getConfigTxHash(0, 1, 1, 1, 1)
+      .then(function(data) {
+
+        assert(data[0].name === 'TxHash');
+        assert(data[0].detail.length === 64);
+
+      });
+    });
+    it('should throw an error if arguments are missing', function() {
+      var bazo = new bazolib(serverURL);
+      return bazo.getConfigTxHash(0, 1, 1, 1)
+      .then(function(data) {
+        assert.fail()
+      })
+      .catch(function(err) {
+        assert(true);
+      });
+    });
+    it('should accept a posted transaction', function() {
+      var bazo = new bazolib(serverURL);
+      return bazo.sendRawConfigTx('5c0ce50cc90a469fb2a6c995e43bddf8cd8100c9506948c2c12768b2ed2a40d5', '5c0ce50cc90a469fb2a6c995e43bddf8cd8100c9506948c2c12768b2ed2a40d5')
+      .then(function(data) {
+        assert(true)
+      })
+      .catch(function(err) {
+        assert.fail()
+      });
+    });
+    it('should be possible to create and sign a transaction', function() {
+      var bazo = new bazolib(serverURL);
+      return bazo.createAndSubmitConfigTx(0, 3, 5, 1, rootPubKey, rootPrivKey)
+      .then((res) => {
+          assert(res)
+      })
+      .catch((err) => {
+        console.log(err);
+        console.log('INFO: If this test case fails, it is likely due to a problem with the bazo light client. It is recommended to check the output of the API.');
+        assert.fail()
+      })
+    });
+    it('should not be possible to create and sign a transaction with missing arguments', function() {
+      var bazo = new bazolib(serverURL);
+      return bazo.createAndSubmitConfigTx(0, 3, 5, 1, rootPubKey)
+      .then((res)=> {
+        assert.fail()
+      })
+      .catch((err) => {
+        assert(true)
+      })
+    });
+  });
+
+
+
 
   describe('Helpers', function() {
     describe('Key generation', function() {
@@ -154,17 +282,17 @@ describe('bazo-api-lib', function() {
         let bazo = new bazolib('http://localhost');
         let hash = 'c31d3b087ae383eaec26714b0a058882d31ce35af9decb07505e781b55d580a7';
         let signature = '8253619fefa353e2687cbc1207c48f65937903bff66abcb784f83e7af130d2f8f12f72283db7687947d3192832754fb637da9cccc5308b44802e334b0389014f';
-        let fundsTxUrl = bazo.formatTransactionSubmission(hash, signature)
+        let fundsTxUrl = bazo.formatFundsTxURL(hash, signature)
 
         assert(fundsTxUrl.length === 222)
       });
-      it('should return an emoty URL for missing parameters', function() {
+      it('should return an empty URL for missing parameters', function() {
         let bazo = new bazolib('http://localhost');
         let hash = 'c31d3b087ae383eaec26714b0a058882d31ce35af9decb07505e781b55d580a7';
         let signature = '8253619fefa353e2687cbc1207c48f65937903bff66abcb784f83e7af130d2f8f12f72283db7687947d3192832754fb637da9cccc5308b44802e334b0389014f';
 
-        let fundsTxUrl1 = bazo.formatTransactionSubmission(hash, '')
-        let fundsTxUrl2 = bazo.formatTransactionSubmission('', signature)
+        let fundsTxUrl1 = bazo.formatFundsTxURL(hash, '')
+        let fundsTxUrl2 = bazo.formatFundsTxURL('', signature)
 
         assert(fundsTxUrl1.length === 0)
         assert(fundsTxUrl2.length === 0)
