@@ -89,18 +89,87 @@ describe('bazo-api-lib', function() {
           assert(res)
       })
       .catch((err) => {
-          assert.fail('', '')
+        console.log('INFO: If this test case fails, it is likely due to a problem with the bazo light client. It is recommended to check the output of the API.');
+        assert.fail('', '')
       })
     });
     it('should not be possible to create and sign a transaction with missing arguments', function() {
       var bazo = new bazolib(serverURL);
       return bazo.createAndSubmitTransaction(0, 9, 1, nonRootPubKey1, nonRootPubKey2)
       .then((res)=> {
-          assert(res)
+        assert.fail()
       })
       .catch((err) => {
         assert(true)
       })
+    });
+  });
+
+  describe('Helpers', function() {
+    describe('Key generation', function() {
+      it('should return a valid key pair', function() {
+        var bazo = new bazolib();
+        let keypair = bazo.generateKeyPair();
+        assert(keypair.hasOwnProperty('privateKey'))
+        assert(keypair.hasOwnProperty('publicKey'))
+
+        assert(keypair.privateKey.length === 64)
+        assert(keypair.publicKey.length === 128)
+
+      });
+    });
+    describe('Hash signing', function() {
+      it('should return a valid signature', function() {
+        var bazo = new bazolib();
+        let hash = 'c31d3b087ae383eaec26714b0a058882d31ce35af9decb07505e781b55d580a7'
+        let signature = bazo.signHash(hash, nonRootPubKey1);
+        assert(signature.length === 128)
+      });
+      it('should not return a valid signature if no private Key is given', function() {
+        var bazo = new bazolib();
+        let hash = 'c31d3b087ae383eaec26714b0a058882d31ce35af9decb07505e781b55d580a7'
+        let signature1 = bazo.signHash(hash, '');
+        assert(signature1 === '')
+      });
+      it('should not return a valid signature if no hash is given', function() {
+        var bazo = new bazolib();
+        let hash = ''
+        let signature1 = bazo.signHash(hash, nonRootPubKey1);
+        assert(signature1 === '')
+      });
+    });
+    describe('Server URL formatting', function() {
+      it('should return a correctly formatted URL', function() {
+        var bazo = new bazolib('http://localhost');
+        let url = bazo.formatServerAddress();
+        assert(url === 'http://localhost/')
+
+        var bazo = new bazolib('http://localhost/');
+        url = bazo.formatServerAddress();
+        assert(url === 'http://localhost/')
+      });
+    });
+    describe('FundsTx URL formatting', function() {
+      it('should return a correctly formatted URL', function() {
+        let bazo = new bazolib('http://localhost');
+        let hash = 'c31d3b087ae383eaec26714b0a058882d31ce35af9decb07505e781b55d580a7';
+        let signature = '8253619fefa353e2687cbc1207c48f65937903bff66abcb784f83e7af130d2f8f12f72283db7687947d3192832754fb637da9cccc5308b44802e334b0389014f';
+        let fundsTxUrl = bazo.formatTransactionSubmission(hash, signature)
+
+        assert(fundsTxUrl.length === 222)
+      });
+      it('should return an emoty URL for missing parameters', function() {
+        let bazo = new bazolib('http://localhost');
+        let hash = 'c31d3b087ae383eaec26714b0a058882d31ce35af9decb07505e781b55d580a7';
+        let signature = '8253619fefa353e2687cbc1207c48f65937903bff66abcb784f83e7af130d2f8f12f72283db7687947d3192832754fb637da9cccc5308b44802e334b0389014f';
+
+        let fundsTxUrl1 = bazo.formatTransactionSubmission(hash, '')
+        let fundsTxUrl2 = bazo.formatTransactionSubmission('', signature)
+
+        assert(fundsTxUrl1.length === 0)
+        assert(fundsTxUrl2.length === 0)
+
+      });
     });
   });
 

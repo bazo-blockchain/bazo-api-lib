@@ -94,9 +94,9 @@ class Bazojs {
     }
     return `${this.formatServerAddress()}createFundsTx/${header}/${amount}/${fee}/${txCount}/${sender}/${recipient}`;
   }
-  formatTransactionSubmission(txHash, signature, reject) {
+  formatTransactionSubmission(txHash, signature) {
     if (!(signature && txHash)) {
-      reject();
+      return '';
     }
     return `${this.formatServerAddress()}sendFundsTx/${txHash}/${signature}`
   }
@@ -107,31 +107,22 @@ class Bazojs {
   }
   signHash(txHash, privateKey, reject) {
     if (!(txHash && privateKey)) {
-      reject();
+      return '';
     }
     let curve = new elliptic.ec('p256')
     let key = curve.keyFromPrivate(privateKey);
     let signature = ''
-    try {
-      signature = key.sign(txHash);
-    } catch (e) {
-      reject();
-    }
+    signature = key.sign(txHash);
+
     return signature.r.toJSON() + signature.s.toJSON();
   }
   responseWasSuccessfull(response) {
     if (typeof response === 'object') {
       return true;
     }
-    if (response === '') {
-      return false;
-    }
     if (response.match(/does not exist/)) {
       return false;
-    } return true;
-  }
-  throwArgumentError() {
-    throw new Error('Missing arguments');
+    }
   }
 }
 
