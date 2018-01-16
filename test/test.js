@@ -88,6 +88,9 @@ describe('bazo-api-lib', function() {
       .then((res) => {
           assert(res)
       })
+      .catch((err) => {
+          assert.fail('', '')
+      })
     });
     it('should not be possible to create and sign a transaction with missing arguments', function() {
       var bazo = new bazolib(serverURL);
