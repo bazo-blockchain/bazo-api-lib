@@ -82,6 +82,16 @@ describe('bazo-api-lib', function() {
         assert.fail()
       });
     });
+    it('should not post a transaction with missing arguments', function() {
+      var bazo = new bazolib(serverURL);
+      return bazo.sendRawFundsTx('5c0ce50cc90a469fb2a6c995e43bddf8cd8100c9506948c2c12768b2ed2a40d5')
+      .then(function(data) {
+        assert.fail()
+      })
+      .catch(function(err) {
+        assert(true)
+      });
+    });
     it('should be possible to create and sign a transaction', function() {
       var bazo = new bazolib(serverURL);
       return bazo.createAndSubmitFundsTx(0, 9, 1, nonRootPubKey1, nonRootPubKey2, nonRootPrivKey1)
@@ -149,6 +159,16 @@ describe('bazo-api-lib', function() {
         assert.fail()
       });
     });
+    it('should not post a transaction with missing arguments', function() {
+      var bazo = new bazolib(serverURL);
+      return bazo.sendRawAccTx('5c0ce50cc90a469fb2a6c995e43bddf8cd8100c9506948c2c12768b2ed2a40d5')
+      .then(function(data) {
+        assert.fail()
+      })
+      .catch(function(err) {
+        assert(true)
+      });
+    });
     it('should be possible to create and sign a transaction', function() {
       var bazo = new bazolib(serverURL);
       return bazo.createAndSubmitAccTx(0, 1, rootPubKey, rootPrivKey)
@@ -163,7 +183,7 @@ describe('bazo-api-lib', function() {
     });
     it('should not be possible to create and sign a transaction with missing arguments', function() {
       var bazo = new bazolib(serverURL);
-      return bazo.createAndSubmitFundsTx(0, 9, 1, nonRootPubKey1, nonRootPubKey2)
+      return bazo.createAndSubmitAccTx(0, 1, rootPubKey)
       .then((res)=> {
         assert.fail()
       })
@@ -204,6 +224,16 @@ describe('bazo-api-lib', function() {
       })
       .catch(function(err) {
         assert.fail()
+      });
+    });
+    it('should not post a transaction with missing arguments', function() {
+      var bazo = new bazolib(serverURL);
+      return bazo.sendRawConfigTx('5c0ce50cc90a469fb2a6c995e43bddf8cd8100c9506948c2c12768b2ed2a40d5')
+      .then(function(data) {
+        assert.fail()
+      })
+      .catch(function(err) {
+        assert(true)
       });
     });
     it('should be possible to create and sign a transaction', function() {
