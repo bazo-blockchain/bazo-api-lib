@@ -57,14 +57,14 @@ describe('bazo-api-lib', function() {
   describe('FundsTx', function() {
     it('should return a correct hash', function() {
       var bazo = new bazolib(serverURL);
-      return bazo.getTransactionHash(0, 10, 1, 1, nonRootPubKey1, nonRootPubKey2)
+      return bazo.getFundsTxHash(0, 10, 1, 1, nonRootPubKey1, nonRootPubKey2)
       .then(function(data) {
         assert(data.length === 64)
       });
     });
     it('should throw an error if arguments are missing', function() {
       var bazo = new bazolib(serverURL);
-      return bazo.getTransactionHash(0, 10, 1, 1, nonRootPubKey1)
+      return bazo.getFundsTxHash(0, 10, 1, 1, nonRootPubKey1)
       .then(function(data) {
         assert.fail()
       })
@@ -74,12 +74,12 @@ describe('bazo-api-lib', function() {
     });
     it('should accept a posted transaction', function() {
       var bazo = new bazolib(serverURL);
-      return bazo.sendRawTransaction('5c0ce50cc90a469fb2a6c995e43bddf8cd8100c9506948c2c12768b2ed2a40d5', '5c0ce50cc90a469fb2a6c995e43bddf8cd8100c9506948c2c12768b2ed2a40d5')
+      return bazo.sendRawFundsTx('5c0ce50cc90a469fb2a6c995e43bddf8cd8100c9506948c2c12768b2ed2a40d5', '5c0ce50cc90a469fb2a6c995e43bddf8cd8100c9506948c2c12768b2ed2a40d5')
       .then(function(data) {
         assert(true)
       })
       .catch(function(err) {
-        assert.fail('', '')
+        assert.fail()
       });
     });
     it('should be possible to create and sign a transaction', function() {
@@ -90,7 +90,7 @@ describe('bazo-api-lib', function() {
       })
       .catch((err) => {
         console.log('INFO: If this test case fails, it is likely due to a problem with the bazo light client. It is recommended to check the output of the API.');
-        assert.fail('', '')
+        assert.fail()
       })
     });
     it('should not be possible to create and sign a transaction with missing arguments', function() {

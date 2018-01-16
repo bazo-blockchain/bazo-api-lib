@@ -20,7 +20,7 @@ class Bazojs {
       })
     });
   }
-  getTransactionHash(header=0, amount, fee, txCount, sender, recipient){
+  getFundsTxHash(header=0, amount, fee, txCount, sender, recipient){
     let that = this;
     return new Promise(function(resolve, reject) {
       let requestURL = that.formatTxHashRequest(header, amount, fee, txCount, sender, recipient, reject);
@@ -37,7 +37,7 @@ class Bazojs {
       }
     });
   }
-  sendRawTransaction(txHash, txSignature){
+  sendRawFundsTx(txHash, txSignature){
     let that = this;
     return new Promise(function(resolve, reject) {
       axios.post(that.formatTransactionSubmission(txHash, txSignature, reject))
@@ -57,10 +57,10 @@ class Bazojs {
       }
       that.getAccountInfo(sender)
       .then((res) => {
-        that.getTransactionHash(header, amount, fee, res.txCnt, sender, recipient)
+        that.getFundsTxHash(header, amount, fee, res.txCnt, sender, recipient)
         .then((res) => {
           let signature = that.signHash(res, privateKey, reject)
-          that.sendRawTransaction(res, signature)
+          that.sendRawFundsTx(res, signature)
           .then((res) => {
             resolve(true)
           })
