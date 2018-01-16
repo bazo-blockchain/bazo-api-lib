@@ -47,6 +47,9 @@ class Bazojs {
   createAndSubmitTransaction(header, amount, fee, sender, recipient, privateKey) {
     let that = this;
     return new Promise(function(resolve, reject) {
+      if (!(amount && fee && sender && recipient && privateKey)) {
+        reject();
+      }
       that.getAccountInfo(sender)
       .then((res) => {
         that.getTransactionHash(header, amount, fee, res.txCnt, sender, recipient)
@@ -69,6 +72,18 @@ class Bazojs {
       })
     });
   }
+  generateKeyPair() {
+    let curve = new elliptic.ec('p256');
+    let keypair = curve.genKeyPair();
+    let publicKey = `${keypair.getPublic().x.toJSON()}${keypair.getPublic().y.toJSON()}`
+    let privateKey = keypair.getPrivate().toJSON();
+    return {
+      privateKey: privateKey,
+      publicKey: publicKey
+    };
+  }
+
+
   formatAccountRequest(publicKey) {
     return `${this.formatServerAddress()}account/${publicKey}`;
   }
