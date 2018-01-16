@@ -23,7 +23,7 @@ class Bazojs {
   getFundsTxHash(header=0, amount, fee, txCount, sender, recipient){
     let that = this;
     return new Promise(function(resolve, reject) {
-      let requestURL = that.formatTxHashRequest(header, amount, fee, txCount, sender, recipient, reject);
+      let requestURL = that.formatFundsTxHash(header, amount, fee, txCount, sender, recipient, reject);
       if (requestURL) {
         axios.post(requestURL)
         .then((res) => {
@@ -37,10 +37,49 @@ class Bazojs {
       }
     });
   }
+
+
+  getAccTxHash(header=0, fee, issuer) {
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      let requestURL = that.formatAccTxHash(header, fee, issuer);
+      if (requestURL) {
+        axios.post(requestURL)
+        .then((res) => {
+          resolve(res.data.content);
+        })
+        .catch((err) => {
+          reject(err);
+        })
+      } else {
+        reject()
+      }
+    });
+  }
+  getConfigTxHash(header=0, id, payload, fee, txCnt) {
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      let requestURL = that.formatConfigTxHash(header, id, payload, fee, txCnt);
+      if (requestURL) {
+        axios.post(requestURL)
+        .then((res) => {
+          resolve(res.data.content);
+        })
+        .catch((err) => {
+          reject(err);
+        })
+      } else {
+        reject()
+      }
+    });
+  }
   sendRawFundsTx(txHash, txSignature){
     let that = this;
     return new Promise(function(resolve, reject) {
-      axios.post(that.formatTransactionSubmission(txHash, txSignature, reject))
+      if (that.formatFundsTxURL(txHash, txSignature) === '') {
+        reject()
+      }
+      axios.post(that.formatFundsTxURL(txHash, txSignature))
       .then((res) => {
         resolve(res);
       })
@@ -49,7 +88,37 @@ class Bazojs {
       })
     });
   }
-  createAndSubmitTransaction(header, amount, fee, sender, recipient, privateKey) {
+  sendRawAccTx(txHash, txSignature){
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      if (that.formatAccTxURL(txHash, txSignature) === '') {
+        reject()
+      }
+      axios.post(that.formatAccTxURL(txHash, txSignature))
+      .then((res) => {
+        resolve(res);
+      })
+      .catch((err) => {
+        reject(err);
+      })
+    });
+  }
+  sendRawConfigTx(txHash, txSignature){
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      if (that.formatConfigTxURL(txHash, txSignature) === '') {
+        reject()
+      }
+      axios.post(that.formatConfigTxURL(txHash, txSignature))
+      .then((res) => {
+        resolve(res);
+      })
+      .catch((err) => {
+        reject(err);
+      })
+    });
+  }
+  createAndSubmitFundsTx(header, amount, fee, sender, recipient, privateKey) {
     let that = this;
     return new Promise(function(resolve, reject) {
       if (!(amount && fee && sender && recipient && privateKey)) {
@@ -77,6 +146,61 @@ class Bazojs {
       })
     });
   }
+  createAndSubmitAccTx(header, fee, issuer, privateKey) {
+    let that = this;
+    let newAccount;
+    return new Promise(function(resolve, reject) {
+      if (!(fee && issuer && privateKey)) {
+        reject();
+      }
+        that.getAccTxHash(header, fee, issuer)
+        .then((res) => {
+          newAccount = res;
+          let signature = that.signHash(res[3].detail, privateKey, reject)
+          that.sendRawAccTx(res[3].detail, signature)
+          .then((res) => {
+            resolve(newAccount)
+          })
+          .catch((err) => {
+            reject(err)
+          })
+        })
+        .catch((err) => {
+          reject(err)
+        })
+    });
+  }
+
+  createAndSubmitConfigTx(header, id, payload, fee, sender, privateKey) {
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      if (!(id && fee && payload && sender && privateKey)) {
+        reject();
+      }
+      that.getAccountInfo(sender)
+      .then((res) => {
+        that.getConfigTxHash(header, id, payload, fee, res.txCnt)
+        .then((res) => {
+          let signature = that.signHash(res[0].detail, privateKey, reject)
+          that.sendRawFundsTx(res[0].detail, signature)
+          .then((res) => {
+            resolve(true)
+          })
+          .catch((err) => {
+            reject(err)
+          })
+        })
+        .catch((err) => {
+          reject(err)
+        })
+      })
+      .catch((err) => {
+        reject(err)
+      })
+    });
+  }
+
+
   generateKeyPair() {
     let curve = new elliptic.ec('p256');
     let keypair = curve.genKeyPair();
@@ -92,18 +216,41 @@ class Bazojs {
   formatAccountRequest(publicKey) {
     return `${this.formatServerAddress()}account/${publicKey}`;
   }
-  formatTxHashRequest(header, amount, fee, txCount, sender, recipient, reject) {
+  formatFundsTxHash(header, amount, fee, txCount, sender, recipient) {
     if (!(amount > 0 && fee > 0 && (txCount !== undefined) &&  (txCount !== '') && sender && recipient)) {
-      //this.throwArgumentError();
       return '';
     }
     return `${this.formatServerAddress()}createFundsTx/${header}/${amount}/${fee}/${txCount}/${sender}/${recipient}`;
   }
-  formatTransactionSubmission(txHash, signature) {
+  formatAccTxHash(header, fee, issuer) {
+    if (!(fee > 0 && issuer)) {
+      return '';
+    }
+    return `${this.formatServerAddress()}createAccTx/${header}/${fee}/${issuer}`;
+  }
+  formatConfigTxHash(header, id, payload, fee, txCnt) {
+    if (!(fee > 0 && (txCnt !== undefined) &&  (txCnt !== '') && id && payload)) {
+      return '';
+    }
+    return `${this.formatServerAddress()}createConfigTx/${header}/${id}/${payload}/${fee}/${txCnt}`;
+  }
+  formatFundsTxURL(txHash, signature) {
     if (!(signature && txHash)) {
       return '';
     }
     return `${this.formatServerAddress()}sendFundsTx/${txHash}/${signature}`
+  }
+  formatConfigTxURL(txHash, signature) {
+    if (!(signature && txHash)) {
+      return '';
+    }
+    return `${this.formatServerAddress()}sendConfigTx/${txHash}/${signature}`
+  }
+  formatAccTxURL(txHash, signature) {
+    if (!(signature && txHash)) {
+      return '';
+    }
+    return `${this.formatServerAddress()}sendAccTx/${txHash}/${signature}`
   }
   formatServerAddress() {
     if (this.serverAddress.slice(-1) !== '/') {
