@@ -23,13 +23,18 @@ class Bazojs {
   getTransactionHash(header=0, amount, fee, txCount, sender, recipient){
     let that = this;
     return new Promise(function(resolve, reject) {
-      axios.post(that.formatTxHashRequest(header, amount, fee, txCount, sender, recipient, reject))
-      .then((res) => {
-        resolve(res.data.content[0].detail);
-      })
-      .catch((err) => {
-        reject(err);
-      })
+      let requestURL = that.formatTxHashRequest(header, amount, fee, txCount, sender, recipient, reject);
+      if (requestURL) {
+        axios.post(requestURL)
+        .then((res) => {
+          resolve(res.data.content[0].detail);
+        })
+        .catch((err) => {
+          reject(err);
+        })
+      } else {
+        reject()
+      }
     });
   }
   sendRawTransaction(txHash, txSignature){
@@ -88,9 +93,9 @@ class Bazojs {
     return `${this.formatServerAddress()}account/${publicKey}`;
   }
   formatTxHashRequest(header, amount, fee, txCount, sender, recipient, reject) {
-    if (!(amount > 0 && fee > 0 && txCount && sender && recipient)) {
+    if (!(amount > 0 && fee > 0 && (txCount !== undefined) &&  (txCount !== '') && sender && recipient)) {
       //this.throwArgumentError();
-      reject();
+      return '';
     }
     return `${this.formatServerAddress()}createFundsTx/${header}/${amount}/${fee}/${txCount}/${sender}/${recipient}`;
   }
