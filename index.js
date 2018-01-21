@@ -4,6 +4,7 @@ const elliptic = require('elliptic');
 class Bazojs {
   constructor(serverAddress) {
     this.serverAddress = serverAddress || 'http://localhost:8001';
+    this.curve = new elliptic.ec('p256')
   }
   getAccountInfo(publicKey) {
     let that = this;
@@ -261,8 +262,8 @@ class Bazojs {
     if (!(txHash && privateKey)) {
       return '';
     }
-    let curve = new elliptic.ec('p256')
-    let key = curve.keyFromPrivate(privateKey);
+
+    let key = this.curve.keyFromPrivate(privateKey);
     let signature = ''
     signature = key.sign(txHash);
 
