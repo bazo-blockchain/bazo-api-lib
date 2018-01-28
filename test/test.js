@@ -4,8 +4,9 @@ var bazolib = require('../index.js');
 /*
 * Set these variables up at the start!
 */
-const serverURL = 'https://fc6cbb95.ngrok.io/';
-const rootPubKey = '';
+const serverURL = 'https://csg.uzh.ch/bazo/api/';
+const rootPubKey = 'f894ba7a24c1c324bc4b0a833d4b076a0e0f675a380fb7e782672c6568aaab0669ddbc62f79cb521411840d83ff0abf941a8e717d81af3dfc2973f1bac30308a';
+const rootPrivKey = '4e8cf4d82d1a376484659b632c0c506affe3c394d18266379c1c6b86eb5ba0fb';
 const nonRootPubKey1 = 'dedb0e69150a68503fedfb4f79a462a6da751df9134705ebab941266e9b7854adae4cb8cef04d9538b31263e5eb71ff6af439cde04a28136d8a89a02bbed752f';
 const nonRootPrivKey1 = '473ce753cc544ce20f22d267a1540fca622f9cb0edcf3ecf2182bdc1c421a9f9';
 const nonRootPubKey2 = 'c213c4556b4fc6fd089dc19d4a2e06a64c90d03c0faf61068e55617eb97bd2318dd24c73623d797bcfbbfbfc781b0d7e6d80ead834cad4f0a2c1f3326ff48298';
