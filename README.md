@@ -21,7 +21,8 @@ Simply require the `index.js` file in your npm-based project or link the complet
 
 ## Testing
 
-Run the unit tests:
+Spin up a bazo node consisting of bazo miner and bazo client and configure the testing file in `test/test.js` with a valid URL, root and non-root accounts.
+Then run the unit tests:
 
 ```
 yarn run test
